@@ -64,17 +64,17 @@ bestlambda.lasso = cv.lasso$lambda.min
 bestlambda.lasso
 log(bestlambda.lasso)
 
-#
+#Fitting model with best lambda
 cv.lasso.bestfit = predict(cv.lasso, s = bestlambda.lasso, newx = x_train, type = "class")
 table(truth = y_train, prediction = cv.lasso.bestfit)
 (3102+347)/4328
 
 predict(cv.lasso, s = bestlambda.lasso, type = "coefficients")
-#Intercept:-2.856482e+00
-#sum.InscClaimAmtReimbursed: 3.472128e+01
-#OupatientInpatient2Ratio:-4.473722e+06
-#sum.Diagnosis: 8.682418e+03
-#Majority_49: 7.730903e+05
+#Intercept
+#sum.InscClaimAmtReimbursed
+#OupatientInpatient2Ratio
+#sum.Diagnosis
+#Majority_49
 
 #Fitting the lasso regression. Alpha = 1 for lasso regression.
 lasso.models = glmnet(x_train_normalized, y_train, alpha = 1,   family = "binomial",lambda = grid)
