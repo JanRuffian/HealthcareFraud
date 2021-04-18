@@ -1,9 +1,6 @@
 # Load Dataset
 rm(list=ls())
-HealthData <- read.csv('/Users/janruffner/Desktop/HealthcareFraudCapstoneProject/HealthData.csv')
-
-# Creates dummies for states
-HealthData <- dummy_cols(HealthData, select_columns = 'Majority')
+HealthData <- read.csv('/Users/janruffner/Desktop/HealthcareFraudCapstoneProject/Data/HealthData.csv')
 
 # Create Train/Test data
 set.seed(0)
@@ -25,7 +22,7 @@ controls <- train %>% select(sum.BeneID, sum.InscClaimAmtReimbursed, mean.Age,
                              sum.ChronicCond_Alzheimer, sum.ChronicCond_Cancer, 
                              sum.ChronicCond_Heartfailure, sum.ChronicCond_Diabetes, 
                              sum.ChronicCond_Osteoporasis, sum.ChronicCond_rheumatoidarthritis,
-                             sum.ChronicCond_stroke, sum.ChronicCond_ObstrPulmonary)
+                             sum.ChronicCond_stroke, sum.ChronicCond_ObstrPulmonary, sum.Diagnosis,summean_perc, starts_with("Majority")) 
 
 controls2 <- test %>% select(sum.BeneID, sum.InscClaimAmtReimbursed, mean.Age,
                              OupatientInpatient2Ratio,
@@ -33,7 +30,7 @@ controls2 <- test %>% select(sum.BeneID, sum.InscClaimAmtReimbursed, mean.Age,
                              sum.ChronicCond_Alzheimer, sum.ChronicCond_Cancer, 
                              sum.ChronicCond_Heartfailure, sum.ChronicCond_Diabetes, 
                              sum.ChronicCond_Osteoporasis, sum.ChronicCond_rheumatoidarthritis,
-                             sum.ChronicCond_stroke, sum.ChronicCond_ObstrPulmonary, starts_with("Majority")) %>% select(-"Majority")
+                             sum.ChronicCond_stroke, sum.ChronicCond_ObstrPulmonary, sum.Diagnosis,summean_perc, starts_with("Majority")) 
 
 y_train <- as.factor(train$PotentialFraud2)
 x_train <- data.matrix(controls)
@@ -48,10 +45,8 @@ library(gbm)
 set.seed(0)
 boost <- gbm(PotentialFraud2~sum.BeneID+sum.InscClaimAmtReimbursed+mean.Age+
                OupatientInpatient2Ratio+sum.AttendingPhysicians+sum.AttendingPhysicians+
-               GenderRatio+sum.Claims+sum.ChronicCond_Alzheimer+sum.ChronicCond_Cancer+
-               sum.ChronicCond_Heartfailure+sum.ChronicCond_Diabetes+sum.ChronicCond_Osteoporasis+
-               sum.ChronicCond_rheumatoidarthritis+sum.ChronicCond_stroke+
-               sum.ChronicCond_ObstrPulmonary, data=train, 
+               sum.Diagnosis+summean_perc+as.factor(Majority),
+               data=train, 
                distribution="bernoulli",
                n.trees = 1000,
                interaction.depth = 4,
@@ -62,7 +57,7 @@ boost.predictions = round(predict(boost,
                             n.trees = 1000,
                             type = "response"),0)
 table(truth = y_train, prediction = boost.predictions)
-(3917+146)/nrow(x_train)
+(3910+137)/nrow(x_train)
 
 gbmGrid <- expand.grid(
           n.trees = seq(10, 1000, by = 100), 
@@ -78,11 +73,7 @@ train_control <- trainControl(
 )
 
 gbmTune <- train(as.factor(PotentialFraud2)~sum.BeneID+sum.InscClaimAmtReimbursed+mean.Age+
-                   OupatientInpatient2Ratio+sum.AttendingPhysicians+sum.AttendingPhysicians+
-                   GenderRatio+sum.Claims+sum.ChronicCond_Alzheimer+sum.ChronicCond_Cancer+
-                   sum.ChronicCond_Heartfailure+sum.ChronicCond_Diabetes+sum.ChronicCond_Osteoporasis+
-                   sum.ChronicCond_rheumatoidarthritis+sum.ChronicCond_stroke+
-                   sum.ChronicCond_ObstrPulmonary, 
+                   OupatientInpatient2Ratio+sum.AttendingPhysicians+sum.Diagnosis+summean_perc+as.factor(Majority),
                    data=train, 
                    method="gbm",
                    distribution="bernoulli",
@@ -97,11 +88,8 @@ gbmTune$bestTune
 gbmTune$results
 set.seed(0)
 boostTune <- gbm(PotentialFraud2~sum.BeneID+sum.InscClaimAmtReimbursed+mean.Age+
-               OupatientInpatient2Ratio+sum.AttendingPhysicians+sum.AttendingPhysicians+
-               GenderRatio+sum.Claims+sum.ChronicCond_Alzheimer+sum.ChronicCond_Cancer+
-               sum.ChronicCond_Heartfailure+sum.ChronicCond_Diabetes+sum.ChronicCond_Osteoporasis+
-               sum.ChronicCond_rheumatoidarthritis+sum.ChronicCond_stroke+
-               sum.ChronicCond_ObstrPulmonary, data=train, 
+                   OupatientInpatient2Ratio+sum.AttendingPhysicians+sum.AttendingPhysicians+
+                   sum.Diagnosis+summean_perc+as.factor(Majority), data=train, 
               distribution="bernoulli",
               n.trees = 110,
               interaction.depth = 4,
