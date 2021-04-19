@@ -91,22 +91,22 @@ boostTune <- gbm(PotentialFraud2~sum.BeneID+sum.InscClaimAmtReimbursed+mean.Age+
                    OupatientInpatient2Ratio+sum.AttendingPhysicians+sum.AttendingPhysicians+
                    sum.Diagnosis+summean_perc+as.factor(Majority), data=train, 
               distribution="bernoulli",
-              n.trees = 110,
+              n.trees = 910,
               interaction.depth = 4,
               shrinkage = 0.01,
-              n.minobsinnode = 5)
+              n.minobsinnode = 10)
 
 
 boostTune.predictions = round(predict(boostTune,
                                       newdata = as.data.frame(x_train),
-                                      n.trees = 110,
+                                      n.trees = 910,
                                       type = "response"),0)
 table(truth = y_train, prediction = boostTune.predictions)
-(3907+151)/nrow(x_train)
+(3881+236)/nrow(x_train)
 
 boostTune.predictions.test = round(predict(boostTune,
                                       newdata = as.data.frame(x_test),
-                                      n.trees = 110,
+                                      n.trees = 910,
                                       type = "response"),0)
 table(truth = y_test, prediction = boostTune.predictions.test)
-(965+41)/nrow(x_test)
+(955+56)/nrow(x_test)
